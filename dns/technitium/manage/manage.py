@@ -10,6 +10,7 @@ parser = argparse.ArgumentParser(description='Manages DHCP and DNS entries')
 parser.add_argument('-f','--var-file', help='Values file', required=True)
 parser.add_argument('-t','--api-token', help='The API token for logging in to the Technitium API.', required=False)
 parser.add_argument('-a','--api-host', help='The endpoint of Technitium API. If set, overrides api.hostname value in the values file.', required=False)
+parser.add_argument('--dhcp', help='Only runs DHCP updates.', action='store_true')
 loglevel_choices=list(dict.fromkeys([logging.getLevelName(l) for l in logging.getLevelNamesMapping().values()]))
 parser.add_argument('--log-level', help='The log level. Defaults to INFO.', required=False, default="INFO", choices=loglevel_choices)
 args = parser.parse_args()
@@ -209,7 +210,7 @@ def add_dhcp_reservation(scope_name: str, hardware_address: str, ip_address: str
         "comments": "managed by pyTechnitium"
     }
     if comments:
-        params["comments"] = f"{params["comments"]} -: {comments}"
+        params["comments"] = f"{comments} -: {params["comments"]}"
         
     logging.info(f"Adding DHCP Reservation (MAC={hardware_address}; IP={ip_address}) ")
     response = requests.post(url, params=params)
@@ -233,12 +234,13 @@ def set_dhcp_scope_reservations(dhcp_scopes: dict[str, dict], api_host: str, api
     for scope in dhcp_scopes:
         logging.info(f"Processing address reservations for scope: {scope["name"]}")
         for assignment in scope.get("assignments", []):
-            exising_reservation = get_dhcp_reservation(scope["name"], assignment["hardwareAddress"], api_host, api_token)
+            mac_address = str.replace(assignment["hardwareAddress"], ":", "-")
+            exising_reservation = get_dhcp_reservation(scope["name"], mac_address, api_host, api_token)
             if exising_reservation:
-                logging.info(f"Removing existing reservation for MAC {assignment["hardwareAddress"]}.")
-                delete_dhcp_reservation(scope["name"], assignment["hardwareAddress"], api_host, api_token)
+                logging.info(f"Removing existing reservation for MAC {mac_address}.")
+                delete_dhcp_reservation(scope["name"], mac_address, api_host, api_token)
             add_dhcp_reservation(scope["name"], 
-                                assignment["hardwareAddress"], 
+                                mac_address, 
                                 assignment["ipAddress"],
                                 api_host,
                                 api_token,
@@ -456,7 +458,7 @@ def main():
     API_HOST: str = get_api_host()
     logging.info(f"API_HOST: {API_HOST}")
 
-    if "zones" in VALUES:
+    if "zones" in VALUES and not args.dhcp:
         validate_dns_zones(VALUES["zones"], API_HOST, API_TOKEN)
         set_dns_zone_records(VALUES["zones"], API_HOST, API_TOKEN)
 
