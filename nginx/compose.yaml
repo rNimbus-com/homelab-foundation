@@ -1,6 +1,6 @@
 services:
   web:
-    image: nginx/proxy
+    image: ${IMAGE_REPO:-nginx/proxy}
     container_name: nginx-proxy
     ports:
       - "80:80"

@@ -23,7 +23,7 @@ main() {
     echo "INFO: Building docker image nginx/proxy:latest..."
     docker build --build-arg IMAGE_ARTIFACTS_PATH="${tmp_artifacts_dir}" \
         --build-arg CERTBOT_CONFIG_FILE="/opt/certbot-config/${CERTBOT_CONFIG_FILE_NAME}" \
-        -t nginx/proxy:latest -f Dockerfile .
+        -t ${IMAGE_REPO}:latest -f Dockerfile .
 }
 
 assert_args_are_valid(){
@@ -48,6 +48,12 @@ assert_env_vars_valid(){
         echo "ERROR: CERTBOT_CONFIG_FILE_NAME not set or empty but is required by this script. Ensure it is included in the .env file or exported prior to running this script." >&2
         echo "         export example:" >&2
         echo "         $ export CERTBOT_CONFIG_FILE_NAME='example.certbot.ini'" >&2
+        exit 1
+    fi
+    if [[ -z ${IMAGE_REPO+x} ]]; then
+        echo "ERROR: IMAGE_REPO not set or empty but is required by this script. Ensure it is included in the .env file or exported prior to running this script." >&2
+        echo "         export example:" >&2
+        echo "         $ export IMAGE_REPO='nginx/proxy'" >&2
         exit 1
     fi
 }

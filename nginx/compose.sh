@@ -2,6 +2,11 @@
 set -e
 
 main() {
+    # Optional environment file
+    env_file="$1"
+    if [[ ! -z ${env_file+x} ]]; then
+        set -o allexport && source "$env_file" && set +o allexport
+    fi
     # Ensure ENV vars are set / read in properly
     assert_env_vars_valid
 
