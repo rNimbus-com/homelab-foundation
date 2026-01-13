@@ -31,9 +31,9 @@ fi
 if [ "$(docker inspect -f {{.State.Running}} technitium-dns-server)" == "true" ]; then
     docker compose -f "$compose_file" down
     docker image rm technitium/dns-server
-    docker compose -f "$compose_file" up
+    docker compose -f "$compose_file" up -d
 else
-    docker image rm technitium/dns-server
+    docker image rm technitium/dns-server --force
     docker compose -f "$compose_file" up -d
     echo "Waiting for technitium-dns-server container to start"
     sleep 5
