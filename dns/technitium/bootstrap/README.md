@@ -143,6 +143,14 @@ TECHNITIUM_API_TOKEN=6a105966a27eb88c5f6fa5dfb24c701b83de711a7f0bf33c23a5d93ec1a
 
 ```
 
+### 3. upgrade.sh
+
+`upgrade.sh` (formerly `restart.sh`) upgrades the Technitium dns-server container to the latest published image: it takes the container down, removes the local `technitium/dns-server:latest` image, and brings it back up, which forces a fresh pull from Docker Hub.
+
+- Pulling `:latest` is intentional -- this script is the upgrade mechanism. Do not pin the image tag in `docker-compose.yml`.
+- To restart the container without upgrading, use `docker restart technitium-dns-server`.
+- Expects environment variables in the `environments/{environment}.env` file (only `DNS_SERVER_NAME` and related values are used for the status output).
+
 ## Post Install Steps
 
 - Save the value of the TECHNITIUM_API_TOKEN somewhere secure if you plan on using it in the future (requires the `configure.sh` or `configure-auth.sh` be sourced)

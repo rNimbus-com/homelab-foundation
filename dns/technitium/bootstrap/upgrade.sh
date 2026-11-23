@@ -1,9 +1,20 @@
 #! /bin/bash
+# Upgrades the technitium-dns-server container to the latest published image.
+#
+#   down -> image rm -> up -d   forces a fresh pull of technitium/dns-server:latest
+#
+# Pulling :latest is INTENTIONAL: this script is the upgrade mechanism for the
+# DNS server. Do not pin the image tag in docker-compose.yml -- the
+# `docker image rm technitium/dns-server` below resolves to the :latest tag
+# and the script aborts (set -e) if it does not exist locally.
+#
+# To restart the container WITHOUT upgrading:
+#   docker restart technitium-dns-server
 set -e
 
 if [[ -z "$1" ]]; then
     echo "An environment file argument is required by this script."
-    echo "  usage: ./restart.sh environments/example.env"
+    echo "  usage: ./upgrade.sh environments/example.env"
     exit 1
 fi
 
